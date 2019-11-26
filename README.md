@@ -3,7 +3,7 @@
 克隆项目
 
 ```
-git clone
+git clone https://github.com/my6889/mattermost.git
 ```
 
 创建挂载目录
