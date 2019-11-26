@@ -1,0 +1,76 @@
+version: "3"
+
+services:
+  db:
+    image: postgres:11.2
+    restart: unless-stopped
+    volumes:
+      - ./volumes/db/var/lib/postgresql/data:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - POSTGRES_USER=mmuser
+      - POSTGRES_PASSWORD=mypassword
+      - POSTGRES_DB=mattermost
+    networks:
+      - defnet
+
+  app:
+      #build:
+      # context: app
+      # uncomment following lines for team edition or change UID/GID
+      # args:
+      #   - edition=team
+      #   - PUID=1000
+      #   - PGID=1000
+    image: registry.cn-shenzhen.aliyuncs.com/sswlib/mattermost-app:v5.17.0
+    restart: unless-stopped
+    volumes:
+      - ./volumes/app/mattermost/config:/mattermost/config:rw
+      - ./volumes/app/mattermost/data:/mattermost/data:rw
+      - ./volumes/app/mattermost/logs:/mattermost/logs:rw
+      - ./volumes/app/mattermost/plugins:/mattermost/plugins:rw
+      - ./volumes/app/mattermost/client-plugins:/mattermost/client/plugins:rw
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      # set same as db credentials and dbname
+      - MM_USERNAME=mmuser
+      - MM_PASSWORD=changeme
+      - MM_DBNAME=mattermost
+
+      # use the credentials you've set above, in the format:
+      # MM_SQLSETTINGS_DATASOURCE=postgres://${MM_USERNAME}:${MM_PASSWORD}@db:5432/${MM_DBNAME}?sslmode=disable&connect_timeout=10
+      - MM_SQLSETTINGS_DATASOURCE=postgres://mmuser:changeme@db:5432/mattermost?sslmode=disable&connect_timeout=10
+
+      # in case your config is not in default location
+      #- MM_CONFIG=/mattermost/config/config.json
+    depends_on:
+      - db
+    networks:
+      - defnet
+
+  web:
+    #build: web
+    image: registry.cn-shenzhen.aliyuncs.com/sswlib/mattermost-app:v5.17.0
+    ports:
+      - "80:80"
+      - "443:443"
+    read_only: true
+    restart: unless-stopped
+    volumes:
+      # This directory must have cert files if you want to enable SSL
+      - ./volumes/web/cert:/cert:ro
+      - /etc/localtime:/etc/localtime:ro
+    # Uncomment for SSL
+    #environment:
+    #  - MATTERMOST_ENABLE_SSL=true
+    depends_on:
+      - app
+    networks:
+      - defnet
+
+networks:
+  defnet:
+    ipam:
+      driver: default
+      config:
+      - subnet: "172.190.0.0/16"
