@@ -22,7 +22,7 @@ services:
       #   - edition=team
       #   - PUID=1000
       #   - PGID=1000
-    image: registry.cn-shenzhen.aliyuncs.com/sswlib/mattermost-app:v5.17.0
+    image: registry.cn-shenzhen.aliyuncs.com/swpvt/mattermost-app:v5.17.0
     restart: unless-stopped
     volumes:
       - ./volumes/app/mattermost/config:/mattermost/config:rw
@@ -50,7 +50,7 @@ services:
 
   web:
     #build: web
-    image: registry.cn-shenzhen.aliyuncs.com/sswlib/mattermost-web:v5.17.0
+    image: registry.cn-shenzhen.aliyuncs.com/swpvt/mattermost-web:v5.17.0
     ports:
       - "80:80"
       - "443:443"
